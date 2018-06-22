@@ -1,11 +1,15 @@
 ---
-title: "Tipos de filme de Anne Hathaway"
+title: "Os filmes da Emma Watson"
+author: "Hadrizia Santos"
+date: "22 de junho de 2018"
 output:
     html_document:
     df_print: paged
 theme: sandstone
 ---
 
+  Emma Watson é conhecida mundialmente como a Hermione de Harry Potter, mas seu trabalho vai muito além. Além destes, a atriz participou de vários outros filmes ótimos e que são sucesso no mundo todo.
+  Abaixo tem-se os tipos de filmes da atriz de acordo com as avaliações dos usuários do Rotten Tomatoes e o sucesso de bilheteria:
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
 library(here)
@@ -28,20 +32,15 @@ paleta = c("#404E4D",
            "#F4743B")
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 ## ANTES DE USAR
 # Para criar data/movies.csv
-anne_hathaway = import_data("anne_hathaway") #ou com o ator/atriz que você escolher
-```
-
-
-```{r read}
+anne_hathaway = import_data("emma_watson") #ou com o ator/atriz que você escolher
 filmes = read_imported_data()
 ```
 
-## Descrição
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 filmes %>% 
     ggplot(aes(x = ano, y = bilheteria)) + 
     geom_point(size = 4, color = paleta[1]) 
@@ -49,22 +48,19 @@ filmes %>%
 
 
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 filmes %>% 
     ggplot(aes(x = bilheteria)) + 
     geom_histogram(fill = paleta[2], color = "black", bins = 5) + scale_x_log10() + geom_rug()
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 filmes %>% 
     ggplot(aes(x = avaliacao)) + 
     geom_histogram(binwidth = 10, boundary = 0, fill = paleta[3], color = "black") + 
     geom_rug(size = .5) 
 ```
-
-## Estrutura de grupos?
-
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
 p = filmes %>% 
     ggplot(aes(x = avaliacao, y = bilheteria, label = filme)) + 
     geom_jitter(width = .05, alpha = .3, size = 3) + 
@@ -72,10 +68,7 @@ p = filmes %>%
 
 ggplotly(p)
 ```
-
-## Agrupamento hierárquico
-
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 agrupamento_h = filmes %>% 
     mutate(nome = paste0(filme, " (av=", avaliacao, ")")) %>% 
     as.data.frame() %>% 
@@ -95,11 +88,11 @@ agrupamento_h_2d = filmes %>%
     hclust(method = "ward.D")
 
 
-ggdendrogram(agrupamento_h_2d, rotate = T, size = 2, theme_dendro = F) + 
-    labs(y = "Dissimilaridade", x = "", title = "Dendrograma")
+#ggdendrogram(agrupamento_h_2d, rotate = T, size = 2, theme_dendro = F) + 
+#    labs(y = "Dissimilaridade", x = "", title = "Dendrograma")
 ```
 
-```{r}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 get_grupos <- function(agrupamento, num_grupos){
     agrupamento %>% 
         cutree(num_grupos) %>% 
@@ -114,32 +107,44 @@ atribuicoes = get_grupos(agrupamento_h_2d, num_grupos = 1:6)
 atribuicoes = atribuicoes %>% 
     left_join(filmes, by = c("label" = "filme"))
 
-atribuicoes %>% 
-    mutate(bilheteria = log10(bilheteria)) %>%
-    ggplot(aes(x = bilheteria, y = avaliacao, colour = grupo)) + 
-    geom_jitter(width = .02, height = 0, size = 1.6, alpha = .6) + 
-    facet_wrap(~ paste(k, " grupos")) + 
-    scale_color_brewer(palette = "Dark2")
-
+#atribuicoes %>% 
+#    mutate(bilheteria = log10(bilheteria)) %>%
+#    ggplot(aes(x = bilheteria, y = avaliacao, colour = grupo)) + 
+#    geom_jitter(width = .02, height = 0, size = 1.6, alpha = .6) + 
+#    facet_wrap(~ paste(k, " grupos")) + 
+#    scale_color_brewer(palette = "Dark2") + coord_flip()
 ```
 
-```{r}
-k_escolhido = 4
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+k_escolhido = 5
 
 p <- atribuicoes %>% 
     filter(k == k_escolhido) %>% 
+    mutate(grupo = 
+               case_when(grupo == '1' ~ 'baixa_avaliacao_baixa_bilheteria',
+                         grupo == '2' ~ 'alta_avaliacao_alta_bilheteria',
+                         grupo == '3' ~ 'media_avaliacao_baixa_bilheteria',
+                         grupo == '4' ~ 'alta_avaliacao_baixa_bilheteria',
+                         grupo == '5' ~ 'media_avaliacao_alta_bilheteria')
+           ) %>%
     ggplot(aes(x = bilheteria, y = avaliacao, colour = grupo, label = label)) + 
     geom_jitter(width = .02, height = 0, size = 3, alpha = .6) + 
-    facet_wrap(~ paste(k, " tipos de filmes de Anne Hathaway")) + 
+    facet_wrap(~ paste("Os ", k, " tipos de filmes da Emma Watson")) + 
     scale_color_brewer(palette = "Dark2") + 
     labs(x = "Bilheteria", y = "Avaliação") + coord_flip() + 
-    theme(legend.position = "none")
+    theme(legend.position = "none") + scale_x_log10()
 
 ggplotly(p)
 ```
 
-  Anne Hathaway possui filmes que estão em 4 grupos: 
-  * Sucesso de bilheteria e com baixa avaliação dos usuários;
-  * Sucesso de bilheteria e com média avaliação dos usuários;
-  * Sucesso de bilheteria e com alta avaliação dos usuários;
-  * Fracassos de bilheteria e com alta avaliação dos usuários;
+### Os tipos de filme da atriz
+  
+* Fracasso de bilheteria e com baixa avaliação dos usuários, que são os filmes que foram sucesso entre o público e mal avaliados pelos críticos do Rotten Tomatoes, composto de só um filme: The circle, o mais recente da atriz, que não agradou nem o público e nem os críticos;
+    
+* Fracasso de bilheteria e com média avaliação dos usuários, que são os filmes que foram sucesso entre o público e com avaliação mediana pelos críticos do Rotten Tomatoes, composto do filme The Bling Ring, que menos agradou o público e teve nota mediana dos usuários;
+
+* Sucesso de bilheteria e com média avaliação dos usuários, que são os filmes que foram sucesso entre o público e com avaliação mediana pelos críticos do Rotten Tomatoes, composto pelo filme The Tale of Despereaux, animação que deve ter conquistado o público infantil, mas com nota bem mediana dada pelos críticos;
+  
+* Sucesso de bilheteria e com alta avaliação dos usuários, que são os filmes que foram sucesso entre o público e bem avaliados pelos críticos do Rotten Tomatoes, estando aqui todos os filmes de Harry Potter, Noah, This is the end e o filme de maior sucesso de bilheteria da atriz: Beauty and the beast, que consquistaram tanto o público quanto os críticos;
+
+* Fracassos de bilheteria e com alta avaliação dos usuários, que são os filmes que foram fracasso entre o público e com avaliação alta dos críticos do Rotten Tomatoes, composto por My Week With Marilyn e The Perks of Being a Wallflower, que consquistaram os críticos, mas nem tanto o público.
